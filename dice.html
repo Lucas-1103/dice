@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動骰子對決</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        h1 { color: #333; }
+
+        .game-container {
+            display: flex;
+            gap: 50px;
+            margin-bottom: 30px;
+        }
+
+        .player-box {
+            text-align: center;
+        }
+
+        /* 骰子基礎樣式 */
+        .dice {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            padding: 10px;
+            box-sizing: border-box;
+            transition: transform 0.4s ease;
+        }
+
+        /* 骰子圓點 */
+        .dot {
+            background-color: #333;
+            border-radius: 50%;
+            margin: 4px;
+            visibility: hidden; /* 預設隱藏 */
+        }
+
+        /* 點數佈局控制 */
+        .dice[data-value="1"] .dot:nth-child(5) { visibility: visible; }
+        
+        .dice[data-value="2"] .dot:nth-child(1),
+        .dice[data-value="2"] .dot:nth-child(9) { visibility: visible; }
+        
+        .dice[data-value="3"] .dot:nth-child(1),
+        .dice[data-value="3"] .dot:nth-child(5),
+        .dice[data-value="3"] .dot:nth-child(9) { visibility: visible; }
+        
+        .dice[data-value="4"] .dot:nth-child(1),
+        .dice[data-value="4"] .dot:nth-child(3),
+        .dice[data-value="4"] .dot:nth-child(7),
+        .dice[data-value="4"] .dot:nth-child(9) { visibility: visible; }
+        
+        .dice[data-value="5"] .dot:nth-child(1),
+        .dice[data-value="5"] .dot:nth-child(3),
+        .dice[data-value="5"] .dot:nth-child(5),
+        .dice[data-value="5"] .dot:nth-child(7),
+        .dice[data-value="5"] .dot:nth-child(9) { visibility: visible; }
+        
+        .dice[data-value="6"] .dot:nth-child(1),
+        .dice[data-value="6"] .dot:nth-child(3),
+        .dice[data-value="6"] .dot:nth-child(4),
+        .dice[data-value="6"] .dot:nth-child(6),
+        .dice[data-value="6"] .dot:nth-child(7),
+        .dice[data-value="6"] .dot:nth-child(9) { visibility: visible; }
+
+        .shake { animation: shake 0.5s infinite; }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg) translate(2px, 2px); }
+            50% { transform: rotate(-10deg) translate(-2px, -2px); }
+            75% { transform: rotate(5deg) translate(1px, 1px); }
+            100% { transform: rotate(0deg); }
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: #45a049; }
+        
+        #result {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d32f2f;
+            height: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="title">準備好挑戰了嗎？</h1>
+
+    <div class="game-container">
+        <div class="player-box">
+            <p>玩家 1</p>
+            <div id="dice1" class="dice" data-value="1">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+        </div>
+
+        <div class="player-box">
+            <p>玩家 2</p>
+            <div id="dice2" class="dice" data-value="1">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="rollDice()">擲骰子！</button>
+    <div id="result"></div>
+
+    <script>
+        function rollDice() {
+            const dice1 = document.getElementById('dice1');
+            const dice2 = document.getElementById('dice2');
+            const resultDisplay = document.getElementById('result');
+            const title = document.getElementById('title');
+
+            // 添加晃動動畫
+            dice1.classList.add('shake');
+            dice2.classList.add('shake');
+            resultDisplay.textContent = "轉動中...";
+
+            setTimeout(() => {
+                // 產生 1-6 的隨機數
+                const val1 = Math.floor(Math.random() * 6) + 1;
+                const val2 = Math.floor(Math.random() * 6) + 1;
+
+                // 更新骰子數值 (觸發 CSS 顯示對應圓點)
+                dice1.setAttribute('data-value', val1);
+                dice2.setAttribute('data-value', val2);
+
+                // 移除晃動動畫
+                dice1.classList.remove('shake');
+                dice2.classList.remove('shake');
+
+                // 判斷勝負
+                if (val1 > val2) {
+                    resultDisplay.textContent = "🚩 玩家 1 獲勝！";
+                } else if (val2 > val1) {
+                    resultDisplay.textContent = "玩家 2 獲勝！ 🚩";
+                } else {
+                    resultDisplay.textContent = "🤝 平手！再試一次";
+                }
+            }, 600); // 延遲 0.6 秒以模擬滾動過程
+        }
+    </script>
+</body>
+</html>
